@@ -84,9 +84,12 @@ else:
 try:
 	aux = values.getInfo()
 	serie = []
+	# for i in range(1, len(aux)):
+	# 	print aux[i][4] == None
 	for i in range(1, len(aux)):
 		serie += [convertDate(str(aux[i][0])[12:20])] + \
-		numpy.round(aux[i][4:15], 4).tolist()
+		['NA' if v is None else v for v in aux[i][4:15]]
+		#numpy.round(aux[i][5:15], 4).tolist()
 
 	# Additional variables to be used in R
 	if len(aux) > 0:
