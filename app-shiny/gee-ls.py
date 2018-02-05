@@ -27,13 +27,6 @@ satsTOA = ['LT4_L1T_TOA_FMASK', 'LT5_L1T_TOA_FMASK', 'LE7_L1T_TOA_FMASK', 'LC8_L
 satsNames = ['4', '5', '7', '8']
 satsProd = ['SR_old', 'SR_new', 'TOA']
 
-#parser.add_argument('shape', help='shapefile of the region of interest (do not include the extension); shape projection must be longlat')
-#parser.add_argument('satellite', help='Which Landsat # to use', choices=satsNames)
-#parser.add_argument('satprod', help='Which Landsat product to use', choices=satsProd)
-#parser.add_argument('periodStart', help='period start date (format YYYY-MM-DD)', type=valid_date)
-#parser.add_argument('periodEnd', help='period end date (format YYYY-MM-DD)', type=valid_date)
-#args = parser.parse_args()
-
 periodStart = valid_date(periodStart)
 periodEnd = valid_date(periodEnd)
 
