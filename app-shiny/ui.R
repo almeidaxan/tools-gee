@@ -57,13 +57,20 @@ shinyUI(navbarPage(
 			),
 			br(),
 			checkboxInput("raster_showMap", "Show shapefile on the map?", FALSE),
-			textInput(inputId = "raster_filename",
-						 label = "Downloaded data file name",
-						 value = "downloaded-data"),
 			selectInput(inputId = "raster_versionLS",
 							label = "Landsat SR Version",
-							choices = list("Collection 1" = "new",
-												"Pre-Collection" = "old")),
+							choices = list("Collection 1" = "SR_new",
+												"Pre-Collection" = "SR_old",
+												"TOA" = "TOA")),
+			selectInput(inputId = "raster_satellite",
+							label = "Landsat Number",
+							choices = list(4, 5, 7, 8)),
+			textInput(inputId = "raster_periodStart",
+						 label = "Period start",
+						 value = "2000-01-01"),
+			textInput(inputId = "raster_periodEnd",
+						 label = "Period end",
+						 value = "2000-12-31"),
 			bsButton(
 				inputId = "raster_botaoDownload",
 				label = "Download",
@@ -71,7 +78,7 @@ shinyUI(navbarPage(
 				icon = icon("download", lib = "font-awesome"),
 				width = "50%"
 			),
-			verbatimTextOutput("teste", placeholder = FALSE)
+			textOutput("msg")
 		),
 
 		mainPanel(

@@ -24,14 +24,12 @@ shinyServer(function(input, output) {
 		infile <- input$raster_datafile
 		infolder <- substr(infile$name, 1, nchar(infile$name) - 4)
 
-		print(infolder)
-
 		if (is.null(infile)) {
 			return(NULL)
 		} else {
 			unzip(infile$name, exdir = infolder)
 			shp <- shapefile(file.path(getwd(), infolder, paste0(infolder, ".shp")))
-			return(shp)
+			return(list(infolder, shp))
 		}
 	})
 
@@ -189,6 +187,28 @@ shinyServer(function(input, output) {
 		}
 	})
 
+	observeEvent(input$raster_botaoDownload, {
+		workpath <- getwd()
+		isolate ({
+			shape <- raster_filedata()[[1]]
+		})
+
+		python.assign("msg", NULL) # nome da pasta descomprimida
+		python.assign("shape", shape) # nome da pasta descomprimida
+		python.assign("satellite", input$raster_satellite) # numero do satelite
+		python.assign("satprod", input$raster_versionLS) # versao do landsat
+		python.assign("periodStart", input$raster_periodStart) # data para comecar a baixar
+		python.assign("periodEnd", input$raster_periodEnd) # data que termina de baixar
+
+		# Executa o script do Python
+		python.load(file.path("gee-ls.py"))
+
+		output$msg <- renderText({ python.get("msg") })
+
+		setwd(workpath)
+
+	})
+
 	output$pixel_leaf <- renderLeaflet({
 
 		m <- leaflet(options = list(attributionControl = F))
@@ -229,8 +249,8 @@ shinyServer(function(input, output) {
 	})
 
 	output$raster_leaf <- renderLeaflet({
-		shp <- raster_filedata()
-		print(shp)
+		shp <- raster_filedata()[[2]]
+
 		m2 <- leaflet(options = list(attributionControl = F))
 		m2 <- addTiles(map = m2,
 						  urlTemplate = "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
