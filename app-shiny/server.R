@@ -7,12 +7,10 @@ source("global.R")
 
 shinyServer(function(input, output) {
 
-	# output$teste <- renderText({ class(input$datafile) })
+	# output$teste <- renderText({  })
 
-
-
-	filedata <- reactive({
-		infile <- input$datafile
+	pixel_filedata <- reactive({
+		infile <- input$pixel_datafile
 
 		if (is.null(infile)) {
 			return(NULL)
@@ -21,23 +19,55 @@ shinyServer(function(input, output) {
 		}
 	})
 
+	raster_filedata <- reactive({
+
+		infile <- input$raster_datafile
+		infolder <- substr(infile$name, 1, nchar(infile$name) - 4)
+
+		print(infolder)
+
+		if (is.null(infile)) {
+			return(NULL)
+		} else {
+			unzip(infile$name, exdir = infolder)
+			shp <- shapefile(file.path(getwd(), infolder, paste0(infolder, ".shp")))
+			return(shp)
+		}
+	})
+
 	# habilita/desabilita o botao de download conforme disponibilidade de df
 	# se a condicao for satisfeita, eh habilitado
-	observeEvent(input$datafile, ignoreNULL = F, {
+	observeEvent(input$pixel_datafile, ignoreNULL = F, {
 		shinyjs::toggleState(
-			id = "botaoDownload",
-			condition = !is.null(input$datafile)
+			id = "pixel_botaoDownload",
+			condition = !is.null(input$pixel_datafile)
+		)
+		shinyjs::toggleState(
+			id = "pixel_showMap",
+			condition = !is.null(input$pixel_datafile)
 		)
 	})
 
-	observeEvent(input$botaoDownload, {
+	observeEvent(input$raster_datafile, ignoreNULL = F, {
+		shinyjs::toggleState(
+			id = "raster_botaoDownload",
+			condition = !is.null(input$raster_datafile)
+		)
+
+		shinyjs::toggleState(
+			id = "raster_showMap",
+			condition = !is.null(input$raster_datafile)
+		)
+	})
+
+	observeEvent(input$pixel_botaoDownload, {
 
 		isolate ({
-			dfCoords <- filedata()
+			dfCoords <- pixel_filedata()
 		})
 
-		collection <- input$versionLS
-		pathArquivo <- file.path(getwd(), paste0(input$filename, ".rds"))
+		collection <- input$pixel_versionLS
+		pathArquivo <- file.path(getwd(), paste0(input$pixel_filename, ".rds"))
 
 		if(collection == "new"){
 			sat <- c("LT04/C01/T1_SR", "LT05/C01/T1_SR", "LE07/C01/T1_SR", "LC08/C01/T1_SR")
@@ -156,6 +186,62 @@ shinyServer(function(input, output) {
 
 				}
 			})
+		}
+	})
+
+	output$pixel_leaf <- renderLeaflet({
+
+		m <- leaflet(options = list(attributionControl = F))
+		m <- addTiles(map = m,
+						  urlTemplate = "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+						  attribution = "Imagery &copy;2016 TerraMetrics",
+						  options = list(maxZoom = 20, subdomains = c('mt0','mt1','mt2','mt3')))
+
+		if(input$pixel_showMap){
+
+			dfCoords <- pixel_filedata()
+
+
+			for(i in 1:nrow(dfCoords)){
+				center <- SpatialPoints(coords = data.frame(dfCoords$long[i], dfCoords$lat[i]),
+												proj4string = CRS(proj_ll))
+				proj_utm_def <- proj_utm(center)
+				center <- spTransform(center, CRS(proj_utm_def))
+
+				xm <- extent(center)[1] # lon
+				ym <- extent(center)[3] # lat
+
+				size <- 30
+				xypoly <- data.frame(x = c(xm-size/2, xm+size/2, xm+size/2, xm-size/2),
+											y = c(ym-size/2, ym-size/2, ym+size/2, ym+size/2))
+
+				outShape <- SpatialPolygons(list(Polygons(list(Polygon(xypoly)),1)),
+													 proj4string = CRS(proj_utm_def))
+				outShape <- spTransform(outShape, CRS(proj_ll))
+				outShape <- SpatialPolygonsDataFrame(outShape, data.frame("ID"=0))
+
+				m <- addPolygons(m, data = outShape, color = "red", opacity=1, fillOpacity=0)
+			}
+			m
+		} else {
+			m
+		}
+	})
+
+	output$raster_leaf <- renderLeaflet({
+		shp <- raster_filedata()
+		print(shp)
+		m2 <- leaflet(options = list(attributionControl = F))
+		m2 <- addTiles(map = m2,
+						  urlTemplate = "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+						  attribution = "Imagery &copy;2016 TerraMetrics",
+						  options = list(maxZoom = 20, subdomains = c('mt0','mt1','mt2','mt3')))
+
+		if(input$raster_showMap){
+			m2 <- addPolygons(m2, data = shp, color = "white", opacity=1, fillOpacity=0)
+			m2
+		} else {
+			m2
 		}
 	})
 
