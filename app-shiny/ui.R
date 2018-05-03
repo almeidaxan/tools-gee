@@ -1,6 +1,7 @@
 shinyUI(navbarPage(
 
-	title = "Landsat Downloader",
+	title = div(em(strong("Landsat Downloader")), HTML("<small>by Menini & Almeida</small>")),
+	windowTitle = "Landsat Downloader",
 	tabPanel(
 		title = "Pixel",
 
