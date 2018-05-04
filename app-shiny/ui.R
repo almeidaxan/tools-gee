@@ -58,6 +58,7 @@ shinyUI(navbarPage(
 			),
 			br(),
 			checkboxInput("raster_showMap", "Show shapefile on the map?", FALSE),
+			checkboxInput("download_SRTM", "Download SRTM data?", FALSE),
 			selectInput(inputId = "raster_versionLS",
 							label = "Landsat SR Version",
 							choices = list("Collection 1" = "SR_new",

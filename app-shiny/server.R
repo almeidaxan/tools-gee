@@ -201,7 +201,24 @@ shinyServer(function(input, output) {
 		python.assign("periodEnd", input$raster_periodEnd) # data que termina de baixar
 
 		# Executa o script do Python
-		python.load(file.path("gee-ls.py"))
+		pathR <- getwd()
+		python.load(file.path("gee-ls-prepare.py"))
+
+		# Pega o numero de imagens para serem baixadas
+		nRaster <- python.get("imgColLen")
+
+		if(nRaster > 0) {
+			withProgress(message = 'Downloading', value = 0, {
+				for(i in 0:(nRaster-1)) {
+					setProgress((i+1) / nRaster, detail = paste0((i+1), "/", nRaster))
+					python.assign("i", i) # atualizada o valor de i do loop
+					python.load(file.path(pathR,"download-raster-ls.py"))
+				}
+			})
+			if(input$download_SRTM) {
+				python.load(file.path(pathR,"download-SRTM.py"))
+			}
+		}
 
 		output$msg <- renderText({ python.get("msg") })
 
@@ -215,7 +232,8 @@ shinyServer(function(input, output) {
 		m <- addTiles(map = m,
 						  urlTemplate = "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
 						  attribution = "Imagery &copy;2016 TerraMetrics",
-						  options = list(maxZoom = 20, subdomains = c('mt0','mt1','mt2','mt3')))
+						  options = list(maxZoom = 20, noWrap = T, subdomains = c('mt0','mt1','mt2','mt3')))
+		m <- setMaxBounds(m, -180, -90, 180, 90)
 
 		if(input$pixel_showMap){
 
@@ -244,6 +262,7 @@ shinyServer(function(input, output) {
 			}
 			m
 		} else {
+			m <- setView(m, lat = 0, lng = 0, zoom = 2)
 			m
 		}
 	})
@@ -255,12 +274,15 @@ shinyServer(function(input, output) {
 		m2 <- addTiles(map = m2,
 						  urlTemplate = "http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
 						  attribution = "Imagery &copy;2016 TerraMetrics",
-						  options = list(maxZoom = 20, subdomains = c('mt0','mt1','mt2','mt3')))
+						  options = list(maxZoom = 20, noWrap = T, subdomains = c('mt0','mt1','mt2','mt3')))
+
+		m2 <- setMaxBounds(m2, -180, -90, 180, 90)
 
 		if(input$raster_showMap){
 			m2 <- addPolygons(m2, data = shp, color = "white", opacity=1, fillOpacity=0)
 			m2
 		} else {
+			m2 <- setView(m2, lat = 0, lng = 0, zoom = 2)
 			m2
 		}
 	})
