@@ -15,6 +15,7 @@ shinyServer(function(input, output) {
 		if (is.null(infile)) {
 			return(NULL)
 		} else {
+			print(infile$datapath)
 			return(read.csv(infile$datapath, header = TRUE, sep = ","))
 		}
 	})
