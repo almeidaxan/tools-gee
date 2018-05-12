@@ -9,6 +9,17 @@ shinyServer(function(input, output) {
 
 	# output$teste <- renderText({  })
 
+	# dir
+	shinyDirChoose(input, 'dir_download_pixel', roots = c(home = '~'), filetypes = c(''))
+	dir <- reactive(input$dir_download_pixel)
+
+	path <- reactive({
+		home <- normalizePath("~")
+		file.path(home, paste(unlist(dir()$path[-1]), collapse = .Platform$file.sep))
+	})
+
+	output$dir_download_pixel_text <- renderText(path())
+
 	pixel_filedata <- reactive({
 		infile <- input$pixel_datafile
 
@@ -66,7 +77,9 @@ shinyServer(function(input, output) {
 		})
 
 		collection <- input$pixel_versionLS
-		pathArquivo <- file.path(getwd(), paste0(input$pixel_filename, ".rds"))
+		# pathArquivo <- file.path(getwd(), paste0(input$pixel_filename, ".rds"))
+		pathArquivo <- file.path(path(), paste0(input$pixel_filename, ".rds"))
+		pathAuxPixel <- getwd()
 
 		if(collection == "new"){
 			sat <- c("LT04/C01/T1_SR", "LT05/C01/T1_SR", "LE07/C01/T1_SR", "LC08/C01/T1_SR")
@@ -186,6 +199,9 @@ shinyServer(function(input, output) {
 				}
 			})
 		}
+
+		setwd(pathAuxPixel)
+
 	})
 
 	observeEvent(input$raster_botaoDownload, {

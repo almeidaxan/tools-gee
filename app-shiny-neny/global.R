@@ -8,6 +8,7 @@ p_load(SDMTools)
 p_load(shiny)
 p_load(shinyBS)
 p_load(shinyjs)
+p_load(shinyFiles)
 
 proj_ll <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 proj_utm <- function(shape) {

@@ -15,6 +15,15 @@ shinyUI(navbarPage(
 						 label = "Choose CSV File",
 						 accept = c(".csv")),
 			helpText("The input data must be a .csv file, with comma sep. There must be three columns: plot (id), lat (latitude) and long (longitude)."),
+
+			br(),
+
+			shinyDirButton(id = "dir_download_pixel",
+								label = "Choose the folder",
+								title = "Choose the folder"),
+			verbatimTextOutput("dir_download_pixel_text"),
+
+			helpText("Enter the folder that your data will be downloaded."),
 			br(),
 			checkboxInput("pixel_showMap", "Show points on the map?", FALSE),
 			textInput(inputId = "pixel_filename",
