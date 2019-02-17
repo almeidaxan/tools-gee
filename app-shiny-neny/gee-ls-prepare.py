@@ -16,6 +16,7 @@ import time
 import wget
 import zipfile
 from datetime import datetime
+import numpy as np
 
 def valid_date(s):
 	return datetime.strptime(s, '%Y-%m-%d')
